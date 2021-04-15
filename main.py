@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from matplotlib import pyplot as plt
 
 
 def convolve_3x3(image, kernel):
@@ -34,12 +35,31 @@ kernel_weighted[1][1] = 10  # weighted kernel center
 kernel_weighted /= 18
 
 # Task 1
-cv.imwrite('kitty3x3.bmp', convolve_3x3(img, kernel_ones))  # 2D convolution
-cv.imwrite('kitty3x3-weighted.bmp', convolve_3x3(img, kernel_weighted))
+convolved_img = convolve_3x3(img, kernel_ones)
+weighted_convolved_img = convolve_3x3(img, kernel_weighted)
+
+cv.imwrite('kitty3x3.bmp', convolved_img)  # 2D convolution
+cv.imwrite('kitty3x3-weighted.bmp', weighted_convolved_img)
 
 # Task 2
-sobel_x = cv.Sobel(img, cv.CV_64F, 1, 0, ksize=3)
-sobel_y = cv.Sobel(img, cv.CV_64F, 0, 1, ksize=3)
+sobel_x = cv.Sobel(convolved_img, cv.CV_64F, 1, 0, ksize=3)
+sobel_y = cv.Sobel(convolved_img, cv.CV_64F, 0, 1, ksize=3)
 cv.imwrite('histogram_x.bmp', sobel_x)
 cv.imwrite('histogram_y.bmp', sobel_y)
-cv.imwrite('histogram_combined.bmp', cv.add(sobel_x, sobel_y))  # edge strength image
+
+edge_strength_img = cv.add(sobel_x, sobel_y)  # combining images
+cv.imwrite('histogram_combined.bmp', edge_strength_img)  # edge strength image
+
+# Task 3
+plt.hist(edge_strength_img.ravel(),256,[0,256]); plt.show()  # plotting histogram
+xy, threshold_img = cv.threshold(edge_strength_img, 90, 255, cv.THRESH_BINARY)
+cv.imwrite('threshold.bmp', threshold_img)  # threshold image
+
+# Task 4
+sobel_x_w = cv.Sobel(weighted_convolved_img, cv.CV_64F, 1, 0, ksize=3)
+sobel_y_w = cv.Sobel(weighted_convolved_img, cv.CV_64F, 0, 1, ksize=3)
+edge_strength_img_w = cv.add(sobel_x_w, sobel_y_w)  # combining images
+
+xy, weighted_threshold_img = cv.threshold(edge_strength_img_w, 90, 255, cv.THRESH_BINARY)
+cv.imwrite('threshold_weighted.bmp', weighted_threshold_img)  # weighted threshold image
+
